@@ -4,6 +4,7 @@ set -Eeuo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 IMAGE_NAME="osc-fedora"
 CONTAINER_NAME="osc-container"
+CONTAINER_HOSTNAME="osc-fedora"
 DATA_DIR="$SCRIPT_DIR"
 
 usage() {
@@ -21,7 +22,7 @@ create_container() {
 
     if podman container inspect "$CONTAINER_NAME" >/dev/null 2>&1; then
         echo "Replacing existing container $CONTAINER_NAME..."
-        podman rm --force "$CONTAINER_NAME" >/dev/null
+        podman rm --force -t 1 "$CONTAINER_NAME" >/dev/null
     fi
 
     echo "Creating permanent container $CONTAINER_NAME..."
@@ -30,6 +31,8 @@ create_container() {
     # :Z assigns a private SELinux label to the bind-mounted directory.
     podman create --interactive --tty \
         --name "$CONTAINER_NAME" \
+        --hostname "$CONTAINER_HOSTNAME" \
+	--network host \
         --volume "$DATA_DIR:/root:Z" \
         "$IMAGE_NAME"
 }
