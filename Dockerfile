@@ -9,6 +9,7 @@ ENV ZEPHYR_TOOLCHAIN_VARIANT=zephyr
 ENV ZEPHYR_SDK_INSTALL_DIR=/work/tools/zephyr-sdk
 ENV STM32_CUBE_PROGRAMMER_DIR=/work/tools/STM32CubeProgrammer
 
+# Setup a new user inside the container
 RUN set -eux; \
   existing_user="$(getent passwd "${UID}" | cut -d: -f1 || true)"; \
   named_user="$(getent passwd "${USERNAME}" | cut -d: -f1 || true)"; \
@@ -44,14 +45,11 @@ RUN set -eux; \
 RUN echo "${USERNAME}:TempPassword123" | sudo chpasswd \
   && sudo passwd -e "${USERNAME}"
 
-RUN chown -R "${UID}:${GID}" /opt
-
-
 # Useful basic tools for an interactive Fedora container.
 RUN dnf -y update \
     && dnf -y install \
-    	bash coreutils findutils procps-ng git make fish \
-	iputils gcc-aarch64-linux-gnu neovim cracklib-dicts \
+    	neovim bash coreutils findutils cracklib-dicts procps-ng git fish iputils \
+	make gcc-aarch64-linux-gnu gdb \
     && dnf clean all \
     && rm -rf /var/cache/dnf
 

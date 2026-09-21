@@ -96,6 +96,7 @@ create_container() {
         create_args=(
             --name "$container_name" \
             --hostname "$container_hostname" \
+	    --network host \
             --device=/dev/bus/usb:/dev/bus/usb \
             --volume /dev/bus/usb:/dev/bus/usb \
             --volume "${workspace_dir}:${container_home}:z" \
