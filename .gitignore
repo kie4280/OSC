@@ -1,5 +1,3 @@
 output/
-.dotfiles/
-.config/
-.cache/
-.local/
+raspi-firmware*/
+raspi-fimware-*.tar.xz
