@@ -1,5 +1,27 @@
 SECTIONS
 {
-  . = 0x80000;
   .text : { *(.text) }
+
+  . = align(8)
+
+  .bss : { 
+    . = __bss_start
+    *(.bss) 
+    *(.bss.*)
+    . = __bss_ned
+  } > RAM
+
+  .rodata: {
+    *(.rodata) 
+    *(.rodata.*)
+  }
+
+  .data: {
+    *(.data)
+    *(.data.*)
+  }
+
+  .stack: {
+    *(.stack)
+  }
 }
