@@ -1,4 +1,4 @@
-output/
+build/
 raspi-firmware*/
 raspi-fimware-*.tar.xz
 *.elf
