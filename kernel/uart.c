@@ -1,1 +1,86 @@
 #include "uart.h"
+
+// BCM2837 AUX_MU_IO_REG is at bus address 0x7Ennnnnn. ARM software
+// accesses peripherals through the corresponding physical address 0x3Fnnnnnn.
+#define AUX_ENABLES_PHYSICAL_ADDRESS UINT32_C(0x3F215004)
+#define AUX_MU_IO_REG_BUS_ADDRESS UINT32_C(0x7E215040)
+#define AUX_MU_IO_REG_PHYSICAL_ADDRESS UINT32_C(0x3F215040)
+#define AUX_MU_IER_REG_PHYSICAL_ADDRESS UINT32_C(0x3F215044)
+#define AUX_MU_IIR_REG_PHYSICAL_ADDRESS UINT32_C(0x3F215048)
+#define AUX_MU_LCR_REG_PHYSICAL_ADDRESS UINT32_C(0x3F21504C)
+#define AUX_MU_MCR_REG_PHYSICAL_ADDRESS UINT32_C(0x3F215050)
+#define AUX_MU_LSR_REG_PHYSICAL_ADDRESS UINT32_C(0x3F215054)
+#define AUX_MU_MSR_REG_PHYSICAL_ADDRESS UINT32_C(0x3F215058)
+#define AUX_MU_SCRATCH_PHYSICAL_ADDRESS UINT32_C(0x3F21505C)
+#define AUX_MU_CNTL_REG_PHYSICAL_ADDRESS UINT32_C(0x3F215060)
+#define AUX_MU_STAT_REG_PHYSICAL_ADDRESS UINT32_C(0x3F215064)
+#define AUX_MU_BAUD_REG_PHYSICAL_ADDRESS UINT32_C(0x3F215068)
+#define GPIO_GPFSEL1_PHYSICAL_ADDRESS UINT32_C(0x3F200004)
+
+#define MMIO32(address) ((volatile uint32_t*)(uintptr_t)(address))
+#define AUX_ENABLES_REG MMIO32(AUX_ENABLES_PHYSICAL_ADDRESS)
+#define AUX_MU_IER_REG MMIO32(AUX_MU_IER_REG_PHYSICAL_ADDRESS)
+#define AUX_MU_IIR_REG MMIO32(AUX_MU_IIR_REG_PHYSICAL_ADDRESS)
+#define AUX_MU_LCR_REG MMIO32(AUX_MU_LCR_REG_PHYSICAL_ADDRESS)
+#define AUX_MU_MCR_REG MMIO32(AUX_MU_MCR_REG_PHYSICAL_ADDRESS)
+#define AUX_MU_LSR_REG MMIO32(AUX_MU_LSR_REG_PHYSICAL_ADDRESS)
+#define AUX_MU_CNTL_REG MMIO32(AUX_MU_CNTL_REG_PHYSICAL_ADDRESS)
+#define AUX_MU_BAUD_REG MMIO32(AUX_MU_BAUD_REG_PHYSICAL_ADDRESS)
+#define GPIO_GPFSEL1_REG MMIO32(GPIO_GPFSEL1_PHYSICAL_ADDRESS)
+
+#define AUX_MU_IO_REG \
+  ((volatile uint8_t*)(uintptr_t)AUX_MU_IO_REG_PHYSICAL_ADDRESS)
+
+#define GPIO14_15_FUNCTION_MASK ((UINT32_C(7) << 12) | (UINT32_C(7) << 15))
+#define GPIO14_15_ALT5 ((UINT32_C(2) << 12) | (UINT32_C(2) << 15))
+#define AUX_MU_LSR_DATA_READY (UINT32_C(1) << 0)
+#define AUX_MU_LSR_TX_EMPTY (UINT32_C(1) << 5)
+#define AUX_MU_ENABLE_RECEIVER UINT32_C(1)
+#define AUX_MU_ENABLE_TRANSMITTER UINT32_C(2)
+#define AUX_MU_BAUD_115200_AT_250MHZ UINT32_C(270)
+
+static void uart_write_byte(uint8_t byte) {
+  while ((*AUX_MU_LSR_REG & AUX_MU_LSR_TX_EMPTY) == 0) {
+  }
+  *AUX_MU_IO_REG = byte;
+}
+
+int uart_init(void) {
+  // GPIO14/15 use ALT5 for mini UART TX/RX.
+  *GPIO_GPFSEL1_REG = (*GPIO_GPFSEL1_REG & ~GPIO14_15_FUNCTION_MASK) |
+                      GPIO14_15_ALT5;
+
+  // Enable the auxiliary block, then configure the mini UART while disabled.
+  *AUX_ENABLES_REG |= UINT32_C(1);
+  *AUX_MU_CNTL_REG = 0;
+  *AUX_MU_IER_REG = 0;
+  *AUX_MU_LCR_REG = UINT32_C(3);  // 8-bit mode
+  *AUX_MU_MCR_REG = 0;
+  *AUX_MU_IIR_REG = UINT32_C(0xC6);  // Clear receive and transmit FIFOs.
+  *AUX_MU_BAUD_REG = AUX_MU_BAUD_115200_AT_250MHZ;
+
+  *AUX_MU_CNTL_REG = AUX_MU_ENABLE_RECEIVER | AUX_MU_ENABLE_TRANSMITTER;
+  return 0;
+}
+
+int uart_getc(char* c) {
+  if (c == NULL) {
+    return -1;
+  }
+
+  while ((*AUX_MU_LSR_REG & AUX_MU_LSR_DATA_READY) == 0) {
+  }
+  *c = (char)*AUX_MU_IO_REG;
+  return 0;
+}
+
+int uart_puts(const char* str, size_t len) {
+  if (str == NULL && len != 0) {
+    return -1;
+  }
+
+  for (size_t i = 0; i < len; ++i) {
+    uart_write_byte((uint8_t)str[i]);
+  }
+  return 0;
+}

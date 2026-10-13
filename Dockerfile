@@ -5,9 +5,6 @@ ARG GID=1000
 ARG USERNAME=dev
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV ZEPHYR_TOOLCHAIN_VARIANT=zephyr
-ENV ZEPHYR_SDK_INSTALL_DIR=/work/tools/zephyr-sdk
-ENV STM32_CUBE_PROGRAMMER_DIR=/work/tools/STM32CubeProgrammer
 
 # Setup a new user inside the container
 RUN set -eux; \
@@ -55,7 +52,7 @@ RUN dnf -y update \
 
 RUN dnf -y upgrade
 
-ENV PATH="/work/.venv/bin:/work/tools:/work/tools/STM32CubeProgrammer/bin:${PATH}"
+ENV PATH="/work/.venv/bin:/work/tools:${PATH}"
 ENV HOME="/home/${USERNAME}"
 USER ${USERNAME}
 WORKDIR /work

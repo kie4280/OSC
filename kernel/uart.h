@@ -1,8 +1,11 @@
-#ifndef UART_H
-#define UART_H
+#ifndef RPI_UART_H
+#define RPI_UART_H
 
-void uart_init(void);
-void uart_putc(char c);
-void uart_puts(const char* s);
+#include <stddef.h>
+#include <stdint.h>
 
-#endif  // UART_H
+int uart_init(void);
+int uart_getc(char *c);
+int uart_puts(const char* str, size_t len);
+
+#endif  // RPI_UART_H
