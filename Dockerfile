@@ -38,15 +38,20 @@ RUN set -eux; \
   --create-home --shell /usr/bin/fish "${USERNAME}"; \
   fi
 
-# force users to change password
+# Allow the container user to run sudo without a password.
+RUN printf '%s ALL=(ALL) NOPASSWD: ALL\n' "${USERNAME}" > "/etc/sudoers.d/${USERNAME}" \
+    && chmod 0440 "/etc/sudoers.d/${USERNAME}" \
+    && visudo -cf "/etc/sudoers.d/${USERNAME}"
+
+# Force users to change password.
 RUN echo "${USERNAME}:TempPassword123" | sudo chpasswd \
   && sudo passwd -e "${USERNAME}"
 
 # Useful basic tools for an interactive Fedora container.
 RUN dnf -y update \
     && dnf -y install \
-    	neovim bash coreutils findutils cracklib-dicts procps-ng git fish iputils \
-	make gcc-aarch64-linux-gnu gdb cmake \
+      sudo neovim bash coreutils findutils cracklib-dicts procps-ng git fish iputils \
+      make gcc-aarch64-linux-gnu gdb cmake git-lfs \
     && dnf clean all \
     && rm -rf /var/cache/dnf
 
