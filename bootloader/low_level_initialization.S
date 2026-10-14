@@ -12,7 +12,7 @@ clear_bss:
 clear_bss_done:
 
 set_sp:
-    ldr x2, = _stack_top
+    ldr x2, = __stack_top
     mov sp, x2
 
 _bootstrap:

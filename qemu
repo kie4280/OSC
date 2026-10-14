@@ -1,0 +1,10 @@
+#!/bin/bash
+qemu-system-aarch64 \
+  -M raspi3b \
+  -gdb tcp::1234 \
+  -S \
+  -kernel ./build/kernel8.elf \
+  -append "console=ttyAMA0,115200 root=/dev/mmcblk0p2 rootwait rw" \
+  -serial stdio \
+  -monitor none \
+  -display none

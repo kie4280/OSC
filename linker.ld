@@ -36,6 +36,5 @@ SECTIONS
     __stack_size = 0x4000;  /* 16 KiB per core */
     __stack_bottom = __stack_top - (4 * __stack_size);
 
-    ASSERT(__bss_end__ <= __stack_bottom,
-        "BSS overlaps reserved stacks");
+    ASSERT((__bss_end__ <= __stack_bottom), "BSS overlaps reserved stacks")
 }

@@ -1,12 +1,17 @@
 #include "kernel.h"
+#include "uart.h"
+
+void init_hardware() {
+  // Initialize UART for serial communication
+  uart_init();
+}
 
 void bootstrap_kernel() {
-    // Initialize hardware components
-    init_hardware();
+  /* bootloader calls this function to load kernel */
 
-    // Load the operating system kernel
-    load_kernel();
-
-    // Transfer control to the kernel
-    jump_to_kernel();
+  // Initialize hardware components
+  init_hardware();
+  while (1) {
+    uart_puts("Bootloader: Hardware initialized.\n", 34);
+  }
 }

@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
 
+# The kernel is freestanding, so compiler checks must not try to link a Linux
+# executable against the target's C runtime.
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+set(CMAKE_SYSTEM_PROCESSOR aarch64)
+
 project(OSC
     VERSION 0.1.0
     LANGUAGES C ASM
@@ -26,7 +31,7 @@ file (GLOB KERNEL_SOURCES kernel/*.c)
 add_executable(osc.elf ${OSC_SOURCES} ${KERNEL_SOURCES})
 
 set_target_properties(osc.elf PROPERTIES
-    OUTPUT_NAME "osc"
+    OUTPUT_NAME "kernel8"
     SUFFIX ".elf"
 )
 

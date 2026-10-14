@@ -46,7 +46,7 @@ RUN echo "${USERNAME}:TempPassword123" | sudo chpasswd \
 RUN dnf -y update \
     && dnf -y install \
     	neovim bash coreutils findutils cracklib-dicts procps-ng git fish iputils \
-	make gcc-aarch64-linux-gnu gdb \
+	make gcc-aarch64-linux-gnu gdb cmake \
     && dnf clean all \
     && rm -rf /var/cache/dnf
 
