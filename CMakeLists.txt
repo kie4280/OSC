@@ -28,23 +28,23 @@ set(OSC_SOURCES
 
 file (GLOB KERNEL_SOURCES kernel/*.c)
 
-add_executable(osc.elf ${OSC_SOURCES} ${KERNEL_SOURCES})
+add_executable(osc_kernel ${OSC_SOURCES} ${KERNEL_SOURCES})
 
-set_target_properties(osc.elf PROPERTIES
+set_target_properties(osc_kernel PROPERTIES
     OUTPUT_NAME "kernel8"
     SUFFIX ".elf"
 )
 
-target_include_directories(osc.elf PRIVATE kernel/)
+target_include_directories(osc_kernel PRIVATE kernel/)
 
-target_compile_options(osc.elf PRIVATE
+target_compile_options(osc_kernel PRIVATE
     $<$<COMPILE_LANGUAGE:C>:-ffreestanding>
     $<$<COMPILE_LANGUAGE:C>:-fno-builtin>
     $<$<COMPILE_LANGUAGE:C>:-Wall>
     $<$<COMPILE_LANGUAGE:C>:-Wextra>
 )
 
-target_link_options(osc.elf PRIVATE
+target_link_options(osc_kernel PRIVATE
     -nostdlib
     -nostartfiles
     "LINKER:--build-id=none"
@@ -52,7 +52,7 @@ target_link_options(osc.elf PRIVATE
     "LINKER:-T,${CMAKE_CURRENT_SOURCE_DIR}/linker.ld"
 )
 
-set_property(TARGET osc.elf APPEND PROPERTY LINK_DEPENDS
+set_property(TARGET osc_kernel APPEND PROPERTY LINK_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/linker.ld"
 )
 
@@ -62,9 +62,9 @@ find_program(OSC_OBJCOPY
 )
 
 if(OSC_OBJCOPY)
-    add_custom_command(TARGET osc.elf POST_BUILD
+    add_custom_command(TARGET osc_kernel POST_BUILD
         COMMAND "${OSC_OBJCOPY}" -O binary
-            "$<TARGET_FILE:osc.elf>"
+            "$<TARGET_FILE:osc_kernel>"
             "${CMAKE_CURRENT_BINARY_DIR}/osc.bin"
         BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/osc.bin"
         COMMENT "Creating osc.bin"

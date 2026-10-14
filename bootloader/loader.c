@@ -11,7 +11,11 @@ void bootstrap_kernel() {
 
   // Initialize hardware components
   init_hardware();
-  while (1) {
-    uart_puts("Bootloader: Hardware initialized.\n", 34);
-  }
+  uart_puts("Bootloader: Hardware initialized.\n", 34);
+  // while (1) {
+  //   for (int a=0; a<1000000; a++) {
+  //     // Busy wait to simulate some delay
+  //   }
+  //   uart_puts("Bootloader: Hardware initialized.\n", 34);
+  // }
 }

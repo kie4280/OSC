@@ -17,3 +17,7 @@ set_sp:
 
 _bootstrap:
     bl bootstrap_kernel
+
+park:
+    wfi
+    b park
