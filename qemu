@@ -1,10 +1,100 @@
-#!/bin/bash
-qemu-system-aarch64 \
-  -M raspi3b \
-  -gdb tcp::1234 \
-  -S \
-  -kernel ./build/kernel8.elf \
-  -append "console=ttyAMA0,115200 root=/dev/mmcblk0p2 rootwait rw" \
-  -serial stdio \
-  -monitor none \
+#!/usr/bin/env bash
+# Run the bare-metal image on QEMU's Raspberry Pi 3B+ model.
+#
+# One-time build (requires CMake and an AArch64 cross compiler):
+#   cmake -S . -B build \
+#     -DCMAKE_SYSTEM_NAME=Generic \
+#     -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+#     -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+#     -DCMAKE_ASM_COMPILER=aarch64-linux-gnu-gcc \
+#     -DCMAKE_BUILD_TYPE=Debug
+#   cmake --build build
+#
+# Run and use the terminal as the UART console:
+#   ./qemu
+#
+# Start paused for GDB on localhost:1234:
+#   ./qemu --gdb
+#   gdb-multiarch build/kernel8.elf
+#   (gdb) target remote 127.0.0.1:1234
+#   (gdb) break uart_init
+#   (gdb) continue
+#   (gdb) break uart_puts
+#   (gdb) continue
+#   (gdb) x/1wx 0x3f215054   # AUX_MU_LSR_REG (TX empty is bit 5)
+#   (gdb) x/1wx 0x3f215068   # AUX_MU_BAUD_REG
+#
+# kernel/uart.c uses the BCM AUX mini UART. On raspi3b, serial0 is PL011 and
+# serial1 is AUX, so route serial0 to null and serial1 to stdio.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+QEMU="${QEMU:-qemu-system-aarch64}"
+KERNEL="${KERNEL:-${SCRIPT_DIR}/build/kernel8.elf}"
+GDB_PORT="${GDB_PORT:-1234}"
+START_PAUSED=0
+
+usage() {
+  cat <<EOF
+Usage: ./qemu [--gdb]
+
+Run build/kernel8.elf on a Raspberry Pi 3B+ model and attach the AUX mini
+UART to this terminal. Build the image first with the CMake commands in this
+script's header.
+
+For UART debugging, start with ./qemu --gdb, connect GDB as shown in the
+script header, and inspect uart_init/uart_puts or the AUX registers:
+  0x3f215040  AUX_MU_IO_REG
+  0x3f215054  AUX_MU_LSR_REG (TX empty is bit 5; RX ready is bit 0)
+  0x3f215068  AUX_MU_BAUD_REG
+
+Options:
+  gdb              Pause at reset and listen for GDB on 127.0.0.1:${GDB_PORT}
+  help|-h|--help   Show this help
+
+You can override QEMU, KERNEL, and GDB_PORT with environment variables.
+EOF
+}
+
+case "${1:-}" in
+  "") ;;
+  gdb) START_PAUSED=1 ;;
+  help|--help|-h) usage; exit 0 ;;
+  *) usage >&2; exit 2 ;;
+esac
+
+if [[ $# -gt 1 ]]; then
+  usage >&2
+  exit 2
+fi
+
+if ! command -v "${QEMU}" >/dev/null 2>&1; then
+  printf 'QEMU executable not found: %s\n' "${QEMU}" >&2
+  exit 127
+fi
+
+if [[ ! -f "${KERNEL}" ]]; then
+  printf 'Kernel ELF not found: %s\n' "${KERNEL}" >&2
+  printf 'Build it with: cmake --build %s/build\n' "${SCRIPT_DIR}" >&2
+  exit 1
+fi
+
+QEMU_ARGS=(
+  -M raspi3b
+  -kernel "${KERNEL}"
+  -serial null
+  -serial stdio
+  -monitor none
   -display none
+  -no-reboot
+)
+
+if [[ "${START_PAUSED}" -eq 1 ]]; then
+  QEMU_ARGS+=(
+    -S
+    -gdb "tcp:127.0.0.1:${GDB_PORT}"
+  )
+fi
+
+exec "${QEMU}" "${QEMU_ARGS[@]}"
