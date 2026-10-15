@@ -3,7 +3,6 @@
 // BCM2837 AUX_MU_IO_REG is at bus address 0x7Ennnnnn. ARM software
 // accesses peripherals through the corresponding physical address 0x3Fnnnnnn.
 #define AUX_ENABLES_PHYSICAL_ADDRESS UINT32_C(0x3F215004)
-#define AUX_MU_IO_REG_BUS_ADDRESS UINT32_C(0x7E215040)
 #define AUX_MU_IO_REG_PHYSICAL_ADDRESS UINT32_C(0x3F215040)
 #define AUX_MU_IER_REG_PHYSICAL_ADDRESS UINT32_C(0x3F215044)
 #define AUX_MU_IIR_REG_PHYSICAL_ADDRESS UINT32_C(0x3F215048)
@@ -37,6 +36,8 @@
 #define AUX_MU_LSR_TX_EMPTY (UINT32_C(1) << 5)
 #define AUX_MU_ENABLE_RECEIVER UINT32_C(1)
 #define AUX_MU_ENABLE_TRANSMITTER UINT32_C(2)
+#define AUX_MU_ENABLE_CTS_FLOWCTRL UINT32_C(8)
+#define AUX_MU_ENABLE_RTS_FLOWCTRL UINT32_C(4)
 #define AUX_MU_BAUD_115200_AT_250MHZ UINT32_C(270)
 
 static void uart_write_byte(uint8_t byte) {
@@ -47,8 +48,8 @@ static void uart_write_byte(uint8_t byte) {
 
 int uart_init(void) {
   // GPIO14/15 use ALT5 for mini UART TX/RX.
-  *GPIO_GPFSEL1_REG = (*GPIO_GPFSEL1_REG & ~GPIO14_15_FUNCTION_MASK) |
-                      GPIO14_15_ALT5;
+  *GPIO_GPFSEL1_REG =
+      (*GPIO_GPFSEL1_REG & ~GPIO14_15_FUNCTION_MASK) | GPIO14_15_ALT5;
 
   // Enable the auxiliary block, then configure the mini UART while disabled.
   *AUX_ENABLES_REG |= UINT32_C(1);

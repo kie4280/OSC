@@ -1,6 +1,17 @@
 .global _start
 
 _start:
+    // Only core 0 performs shared initialization. Other cores must stay out
+    // of BSS clearing and UART setup until an SMP startup path is added.
+    mrs x0, mpidr_el1
+    and x0, x0, #0xffffff
+    cbz x0, primary_core
+
+other_core_park:
+    wfi
+    b other_core_park
+
+primary_core:
     ldr x0, = __bss_start__
     ldr x1, = __bss_end__
 
