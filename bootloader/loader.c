@@ -6,16 +6,14 @@ void init_hardware() {
   uart_init();
 }
 
-void bootstrap_kernel() {
+void bootloader() {
   /* bootloader calls this function to load kernel */
 
   // Initialize hardware components
   init_hardware();
+  shell_init();
   uart_puts("Bootloader: Hardware initialized.\n", 34);
-  // while (1) {
-  //   for (int a=0; a<1000000; a++) {
-  //     // Busy wait to simulate some delay
-  //   }
-  //   uart_puts("Bootloader: Hardware initialized.\n", 34);
-  // }
+  for (int i = 0; i < 5; i++) {
+    uart_puts("Bootloader: Loading kernel...\n", 31);
+  }
 }

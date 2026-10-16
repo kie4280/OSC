@@ -27,7 +27,7 @@ set_sp:
     mov sp, x2
 
 _bootstrap:
-    bl bootstrap_kernel
+    bl bootloader
 
 park:
     wfi
