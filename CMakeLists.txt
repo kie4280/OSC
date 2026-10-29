@@ -26,16 +26,17 @@ set(OSC_SOURCES
     bootloader/loader.c
 )
 
-file (GLOB KERNEL_SOURCES kernel/*.c)
+file (GLOB KERNEL_SOURCES CONFIGURE_DEPENDS kernel/*.c)
+file (GLOB LIB_SOURCES CONFIGURE_DEPENDS lib/*.c)
 
-add_executable(osc_kernel ${OSC_SOURCES} ${KERNEL_SOURCES})
+add_executable(osc_kernel ${OSC_SOURCES} ${KERNEL_SOURCES} ${LIB_SOURCES})
 
 set_target_properties(osc_kernel PROPERTIES
     OUTPUT_NAME "kernel8"
     SUFFIX ".elf"
 )
 
-target_include_directories(osc_kernel PRIVATE kernel/)
+target_include_directories(osc_kernel PRIVATE ./ kernel/)
 
 target_compile_options(osc_kernel PRIVATE
     $<$<COMPILE_LANGUAGE:C>:-ffreestanding>

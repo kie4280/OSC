@@ -1,4 +1,4 @@
-FROM fedora:latest
+FROM fedora:44
 
 ARG UID=1000
 ARG GID=1000
@@ -51,7 +51,7 @@ RUN echo "${USERNAME}:TempPassword123" | sudo chpasswd \
 RUN dnf -y update \
     && dnf -y install \
       sudo neovim bash coreutils findutils cracklib-dicts procps-ng git fish iputils \
-      make gcc-aarch64-linux-gnu gdb cmake git-lfs \
+      make gcc-aarch64-linux-gnu gdb cmake git-lfs sysroot-aarch64-fc44-glibc \
     && dnf clean all \
     && rm -rf /var/cache/dnf
 
