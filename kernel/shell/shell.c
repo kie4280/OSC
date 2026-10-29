@@ -1,5 +1,6 @@
 #include "shell.h"
 
+#include "commands.h"
 #include "lib/string.h"
 #include "uart.h"
 
@@ -112,6 +113,7 @@ static void shell_submit_line(shell_state_t* shell) {
   }
   shell_write(newline);
   shell_add_history(shell);
+  shell_execute_command(shell->input);
 
   shell->input[0] = '\0';
   shell->input_length = 0U;

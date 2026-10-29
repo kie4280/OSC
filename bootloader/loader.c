@@ -1,5 +1,5 @@
 #include "kernel.h"
-#include "shell.h"
+#include "shell/shell.h"
 #include "uart.h"
 
 void init_hardware() {

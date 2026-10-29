@@ -26,7 +26,7 @@ set(OSC_SOURCES
     bootloader/loader.c
 )
 
-file (GLOB KERNEL_SOURCES CONFIGURE_DEPENDS kernel/*.c)
+file (GLOB KERNEL_SOURCES CONFIGURE_DEPENDS kernel/*.c kernel/shell/*.c)
 file (GLOB LIB_SOURCES CONFIGURE_DEPENDS lib/*.c)
 
 add_executable(osc_kernel ${OSC_SOURCES} ${KERNEL_SOURCES} ${LIB_SOURCES})
